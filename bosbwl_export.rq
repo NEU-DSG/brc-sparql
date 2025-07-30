@@ -1,0 +1,249 @@
+# select all property labels, grouped by distinct values
+SELECT ?item ?itemLabel ?itemDescription
+                        (GROUP_CONCAT(DISTINCT ?aliasLabelRaw; SEPARATOR=" | ") AS ?alias)
+                        (GROUP_CONCAT(DISTINCT ?ioLabelRaw; SEPARATOR=" | ") AS ?instanceOf)
+                        (GROUP_CONCAT(DISTINCT ?hpLabelRaw; SEPARATOR=" | ") AS ?honorificPrefix)
+                        (GROUP_CONCAT(DISTINCT ?fnLabelRaw; SEPARATOR=" | ") AS ?familyName)
+                        (GROUP_CONCAT(DISTINCT ?gnLabelRaw; SEPARATOR=" | ") AS ?givenName)
+                        (GROUP_CONCAT(DISTINCT ?hsLabelRaw; SEPARATOR=" | ") AS ?honorificSuffix)
+                        (GROUP_CONCAT(DISTINCT ?pseudoLabelRaw; SEPARATOR=" | ") AS ?pseudonym)
+                        (GROUP_CONCAT(DISTINCT ?nnLabelRaw; SEPARATOR=" | ") AS ?nickname)
+                        (GROUP_CONCAT(DISTINCT ?dobLabelRaw; SEPARATOR=" | ") AS ?dateOfBirth)
+                        (GROUP_CONCAT(DISTINCT ?pobLabelRaw; SEPARATOR=" | ") AS ?placeOfBirth)
+                        (GROUP_CONCAT(DISTINCT ?dodLabelRaw; SEPARATOR=" | ") AS ?dateOfDeath)
+                        (GROUP_CONCAT(DISTINCT ?podLabelRaw; SEPARATOR=" | ") AS ?placeOfDeath)
+                        (GROUP_CONCAT(DISTINCT ?burialLabelRaw; SEPARATOR=" | ") AS ?placeOfBurial)
+                        (GROUP_CONCAT(DISTINCT ?sogLabelRaw; SEPARATOR=" | ") AS ?sexOrGender)
+                        (GROUP_CONCAT(DISTINCT ?egLabelRaw; SEPARATOR=" | ") AS ?ethnicGroup)
+                        (GROUP_CONCAT(DISTINCT ?cocLabelRaw; SEPARATOR=" | ") AS ?countryOfCitizenship)
+                        (GROUP_CONCAT(DISTINCT ?langLabelRaw; SEPARATOR=" | ") AS ?languages)
+                        (GROUP_CONCAT(DISTINCT ?occLabelRaw; SEPARATOR=" | ") AS ?occupation)
+                        (GROUP_CONCAT(DISTINCT ?fowLabelRaw; SEPARATOR=" | ") AS ?fieldOfWork)
+                        (GROUP_CONCAT(DISTINCT ?eduLabelRaw; SEPARATOR=" | ") AS ?educatedAt)
+                        (GROUP_CONCAT(DISTINCT ?resiLabelRaw; SEPARATOR=" | ") AS ?residence)
+                        (GROUP_CONCAT(DISTINCT ?notaLabelRaw; SEPARATOR=" | ") AS ?notableWork)
+                        (GROUP_CONCAT(DISTINCT ?awardLabelRaw; SEPARATOR=" | ") AS ?awardReceived)
+                        (GROUP_CONCAT(DISTINCT ?membLabelRaw; SEPARATOR=" | ") AS ?memberOf)
+                        (GROUP_CONCAT(DISTINCT ?posiLabelRaw; SEPARATOR=" | ") AS ?positionHeld)
+                        (GROUP_CONCAT(DISTINCT ?afLabelRaw; SEPARATOR=" | ") AS ?affiliation)
+                        (GROUP_CONCAT(DISTINCT ?aaLabelRaw; SEPARATOR=" | ") AS ?archivesAt)
+                        (GROUP_CONCAT(DISTINCT ?ohaLabelRaw; SEPARATOR=" | ") AS ?oralHistoryAt)
+                        (GROUP_CONCAT(DISTINCT ?fotLabelRaw; SEPARATOR=" | ") AS ?fieldofTraining)
+                        (GROUP_CONCAT(DISTINCT ?influLabelRaw; SEPARATOR=" | ") AS ?influencedBy)
+                        (GROUP_CONCAT(DISTINCT ?descLabelRaw; SEPARATOR=" | ") AS ?describedBySource)
+                        (GROUP_CONCAT(DISTINCT ?wikiLabelRaw; SEPARATOR=" | ") AS ?onWikimediaProject)
+                        (GROUP_CONCAT(DISTINCT ?commonsLabelRaw; SEPARATOR=" | ") AS ?commonsGallery)
+                        (GROUP_CONCAT(DISTINCT ?contrLabelRaw; SEPARATOR=" | ") AS ?contributorToWork)
+                        (GROUP_CONCAT(DISTINCT ?spLabelRaw; SEPARATOR=" | ") AS ?spouse)
+                        (GROUP_CONCAT(DISTINCT ?chiLabelRaw; SEPARATOR=" | ") AS ?child)
+                        (GROUP_CONCAT(DISTINCT ?moLabelRaw; SEPARATOR=" | ") AS ?mother)
+                        (GROUP_CONCAT(DISTINCT ?faLabelRaw; SEPARATOR=" | ") AS ?father)
+                        (GROUP_CONCAT(DISTINCT ?sibLabelRaw; SEPARATOR=" | ") AS ?sibling)
+
+# where the focus list is Boston Black Women Lead
+WHERE {
+  ?item wdt:P5008 wd:Q125506305.
+
+# Optionally select all properties, grabbing the label and making sure that it's in English.
+  OPTIONAL { 
+    ?item skos:altLabel ?aliasLabelRaw.
+    FILTER (LANG(?aliasLabelRaw) = "en")
+  }
+  OPTIONAL { 
+    ?item wdt:P31 ?io.
+    ?io rdfs:label ?ioLabelRaw .
+    FILTER (LANG(?ioLabelRaw) = "en")
+  }
+  OPTIONAL { 
+    ?item wdt:P569 ?dob.
+    ?dob rdfs:label ?dobLabelRaw .
+     FILTER (LANG(?dobLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P19 ?pob.
+    ?pob rdfs:label ?pobLabelRaw .
+    FILTER (LANG(?pobLabelRaw) = "en" ) 
+  }
+  OPTIONAL {
+    ?item wdt:P106 ?occ.
+    ?occ rdfs:label ?occLabelRaw.
+    FILTER (LANG(?occLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P570 ?dod.
+    ?dod rdfs:label ?dodLabelRaw.
+    FILTER (LANG(?dodLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P20 ?pod.
+    ?pod rdfs:label ?podLabelRaw.
+    FILTER (LANG(?podLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P101 ?fow.
+    ?fow rdfs:label ?fowLabelRaw.
+    FILTER (LANG(?fowLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P69 ?edu.
+    ?edu rdfs:label ?eduLabelRaw.
+    FILTER (LANG(?eduLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P21 ?sog.
+    ?sog rdfs:label ?sogLabelRaw.
+    FILTER (LANG(?sogLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P172 ?eg.
+    ?eg rdfs:label ?egLabelRaw.
+    FILTER (LANG(?egLabelRaw) = "en")
+  }
+    OPTIONAL {
+    ?item wdt:P27 ?coc.
+    ?coc rdfs:label ?cocLabelRaw.
+    FILTER (LANG(?cocLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P735 ?gn.
+    ?gn rdfs:label ?gnLabelRaw.
+    FILTER (LANG(?gnLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P734 ?fn.
+    ?fn rdfs:label ?fnLabelRaw.
+    FILTER (LANG(?fnLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P551 ?resi.
+    ?resi rdfs:label ?resiLabelRaw .
+    FILTER (LANG(?resiLabelRaw) = "en" ) 
+  }
+  
+  OPTIONAL {
+    ?item wdt:P1412 ?lang.
+    ?lang rdfs:label ?langLabelRaw.
+    FILTER (LANG(?langLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P800 ?nota.
+    ?nota rdfs:label ?notaLabelRaw.
+    FILTER (LANG(?notaLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P166 ?award.
+    ?award rdfs:label ?awardLabelRaw.
+    FILTER (LANG(?awardLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P463 ?memb.
+    ?memb rdfs:label ?membLabelRaw.
+    FILTER (LANG(?membLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P39 ?posi.
+    ?posi rdfs:label ?posiLabelRaw.
+    FILTER (LANG(?posiLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P737 ?influ.
+    ?influ rdfs:label ?influLabelRaw.
+    FILTER (LANG(?influLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P1343 ?desc.
+    ?desc rdfs:label ?descLabelRaw.
+    FILTER (LANG(?descLabelRaw) = "en")
+  }
+    OPTIONAL {
+    ?item wdt:P5008 ?wiki.
+    ?wiki rdfs:label ?wikiLabelRaw.
+    FILTER (LANG(?wikiLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P935 ?commons.
+    ?commons rdfs:label ?commonsLabelRaw.
+    FILTER (LANG(?commonsLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P119 ?burial.
+    ?burial rdfs:label ?burialLabelRaw.
+    FILTER (LANG(?burialLabelRaw) = "en")
+  }
+    OPTIONAL {
+    ?item wdt:P767 ?contr.
+    ?contr rdfs:label ?contrLabelRaw.
+    FILTER (LANG(?contrLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P26 ?sp.
+    ?sp rdfs:label ?spLabelRaw.
+    FILTER (LANG(?spLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P40 ?chi.
+    ?chi rdfs:label ?chiLabelRaw.
+    FILTER (LANG(?chiLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P25 ?mo.
+    ?mo rdfs:label ?moLabelRaw.
+    FILTER (LANG(?moLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P22 ?fa.
+    ?fa rdfs:label ?faLabelRaw.
+    FILTER (LANG(?faLabelRaw) = "en")
+  }
+    OPTIONAL {
+    ?item wdt:P3373 ?sib.
+    ?sib rdfs:label ?sibLabelRaw.
+    FILTER (LANG(?sibLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P742 ?pseudo.
+    ?pseudo rdfs:label ?pseudoLabelRaw.
+    FILTER (LANG(?pseudoLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P1449 ?nn.
+    ?nn rdfs:label ?nnLabelRaw.
+    FILTER (LANG(?nnLabelRaw) = "en")
+  }
+  
+  OPTIONAL {
+    ?item wdt:P511 ?hp.
+    ?hp rdfs:label ?hpLabelRaw.
+    FILTER (LANG(?hpLabelRaw) = "en")
+  }
+    OPTIONAL {
+    ?item wdt:P1035 ?hs.
+    ?hs rdfs:label ?hsLabelRaw.
+    FILTER (LANG(?hsLabelRaw) = "en")
+  }
+    OPTIONAL {
+    ?item wdt:P1416 ?af.
+    ?af rdfs:label ?afLabelRaw.
+    FILTER (LANG(?afLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P485 ?aa.
+    ?aa rdfs:label ?aaLabelRaw.
+    FILTER (LANG(?aaLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P9600 ?oha.
+    ?oha rdfs:label ?ohaLabelRaw.
+    FILTER (LANG(?ohaLabelRaw) = "en")
+  }
+  OPTIONAL {
+    ?item wdt:P8258 ?fot.
+    ?fot rdfs:label ?fotLabelRaw.
+    FILTER (LANG(?fotLabelRaw) = "en")
+  }
+
+  
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],mul,en". }
+}
+# Group by item and item label
+GROUP BY ?item ?itemLabel ?itemDescription
