@@ -8,9 +8,9 @@ SELECT ?item ?itemLabel ?itemDescription
                         (GROUP_CONCAT(DISTINCT ?hsLabelRaw; SEPARATOR=" | ") AS ?honorificSuffix)
                         (GROUP_CONCAT(DISTINCT ?pseudoLabelRaw; SEPARATOR=" | ") AS ?pseudonym)
                         (GROUP_CONCAT(DISTINCT ?nnLabelRaw; SEPARATOR=" | ") AS ?nickname)
-                        (GROUP_CONCAT(DISTINCT ?dobLabelRaw; SEPARATOR=" | ") AS ?dateOfBirth)
+                        (GROUP_CONCAT(DISTINCT ?dobFormatted; SEPARATOR=" | ") AS ?dateOfBirth)
                         (GROUP_CONCAT(DISTINCT ?pobLabelRaw; SEPARATOR=" | ") AS ?placeOfBirth)
-                        (GROUP_CONCAT(DISTINCT ?dodLabelRaw; SEPARATOR=" | ") AS ?dateOfDeath)
+                        (GROUP_CONCAT(DISTINCT ?dodFormatted; SEPARATOR=" | ") AS ?dateOfDeath)
                         (GROUP_CONCAT(DISTINCT ?podLabelRaw; SEPARATOR=" | ") AS ?placeOfDeath)
                         (GROUP_CONCAT(DISTINCT ?burialLabelRaw; SEPARATOR=" | ") AS ?placeOfBurial)
                         (GROUP_CONCAT(DISTINCT ?sogLabelRaw; SEPARATOR=" | ") AS ?sexOrGender)
@@ -43,7 +43,6 @@ SELECT ?item ?itemLabel ?itemDescription
 # where the focus list is Boston Black Women Lead
 WHERE {
   ?item wdt:P5008 wd:Q125506305.
-
 # Optionally select all properties, grabbing the label and making sure that it's in English.
   OPTIONAL { 
     ?item skos:altLabel ?aliasLabelRaw.
@@ -56,8 +55,7 @@ WHERE {
   }
   OPTIONAL { 
     ?item wdt:P569 ?dob.
-    ?dob rdfs:label ?dobLabelRaw .
-     FILTER (LANG(?dobLabelRaw) = "en")
+    BIND(SUBSTR(STR(?dob), 1, 10) AS ?dobFormatted)
   }
   OPTIONAL {
     ?item wdt:P19 ?pob.
@@ -71,8 +69,7 @@ WHERE {
   }
   OPTIONAL {
     ?item wdt:P570 ?dod.
-    ?dod rdfs:label ?dodLabelRaw.
-    FILTER (LANG(?dodLabelRaw) = "en")
+    BIND(SUBSTR(STR(?dod), 1, 10) AS ?dodFormatted)
   }
   OPTIONAL {
     ?item wdt:P20 ?pod.
@@ -242,8 +239,7 @@ WHERE {
     FILTER (LANG(?fotLabelRaw) = "en")
   }
 
-  
   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],mul,en". }
 }
-# Group by item and item label
+# Group by item, label, and description
 GROUP BY ?item ?itemLabel ?itemDescription
