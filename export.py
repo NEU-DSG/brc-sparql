@@ -104,6 +104,7 @@ def wikidata_time_to_iso(ts):
     return f"{year:04d}-{month_str}-{day_str}"
 
 def export_item(repo, q_id):
+    print(q_id)
     # Create dictionary for new row
     row = dict.fromkeys(COLUMN_NAMES)
     item = pywikibot.ItemPage(repo, q_id)  # a repository item
@@ -120,40 +121,77 @@ def export_item(repo, q_id):
     combined_aliases = '|'.join([a.get('value', '') for a in aliases if a.get('value')])
     row['alias'] = combined_aliases
     
-    # for p_value in claims:
-    #     if p_value in ALL_PROPS:
-    #         print('-------------------------------------------------------------')
-    #         print(labeler(p_value,repo))
-    #         statement_counter = 0
-    #         for statement in claims[p_value]:
-    #             statement_counter += 1
-    #             print('statement ' + str(statement_counter))
-    #             value = statement['mainsnak']['datavalue']['value']
-    #             if 'numeric-id' in value:
-    #                 print(labeler('Q' + str(value['numeric-id']), repo))
-    #             else:
-    #                 print(wikidata_time_to_iso(value['time']))
-    #             if 'references' in statement:
-    #                 for ref in statement['references']:
-    #                     # print(ref['snaks'])
-    #                     ref_label = labeler(ref['snaks'][next(iter(ref['snaks']))][0]['property'], repo)
-    #                     reference = ref['snaks'][next(iter(ref['snaks']))][0]['datavalue']['value']
-    #                     if isinstance(reference, dict):
-    #                         print(ref_label + ': ' + labeler('Q' + str(reference['numeric-id']), repo))
-    #                     else:
-    #                         print(ref_label + ': ' + reference)
-    #             if 'qualifiers' in statement:
-    #                 qualifiers = statement['qualifiers']
-    #                 for qua in qualifiers:
-    #                     qua_label = labeler(qualifiers[qua][0]['property'], repo)
-    #                     qualifier = qualifiers[qua][0]['datavalue']['value']
-    #                     if isinstance(qualifier, dict):
-    #                         if 'numeric-id' in qualifier:
-    #                             print(qua_label + ': ' + labeler('Q' + str(qualifier['numeric-id']), repo))
-    #                         else:
-    #                             print(qua_label + ': ' + wikidata_time_to_iso(qualifier['time']))
-    #                     else:
-    #                         print(qua_label + ': ' + qualifier)
+    for p_value in claims:
+        statement_lst = []
+        notes_lst = []
+        if p_value in ALL_PROPS:
+            # print('-------------------------------------------------------------')
+            print(p_value)
+            property = labeler(p_value,repo)
+            statement_counter = 0
+            for statement in claims[p_value]:
+                statement_counter += 1
+                # print('statement ' + str(statement_counter))
+                value = statement['mainsnak']['datavalue']['value']
+                # check if it references another Wikidata item
+                if 'numeric-id' in value and isinstance(value, dict):
+                    statement_lst.append(labeler('Q' + str(value['numeric-id']), repo))
+                    # print(labeler('Q' + str(value['numeric-id']), repo))
+                # otherwise it's a definite time field
+                elif 'time' in value and isinstance(value, dict):
+                    statement_lst.append(wikidata_time_to_iso(value['time']))
+                    # print(wikidata_time_to_iso(value['time']))
+                else:
+                    statement_lst.append(value)
+                if 'references' in statement:
+                    # Iterate over references
+                    reference_counter = 1
+                    for ref in statement['references']:
+                        notes_lst.append('statement ' + str(statement_counter) + ', reference ' + str(reference_counter))
+                        reference_counter += 1
+                        # Iterate over each part of a reference
+                        for part in ref['snaks']:
+                            ref_label = labeler(ref['snaks'][part][0]['property'], repo)
+                            reference = ref['snaks'][part][0]['datavalue']['value']
+                        # print(ref['snaks'])
+                        # ref_label = labeler(ref['snaks'][next(iter(ref['snaks']))][0]['property'], repo)
+                        # reference = ref['snaks'][next(iter(ref['snaks']))][0]['datavalue']['value']
+                        # if it references another Wikidata item
+                            print(reference)
+                            if 'numeric-id' in reference:
+                                notes_lst.append(ref_label + ': ' + labeler('Q' + str(reference['numeric-id']), repo))
+                                # print(ref_label + ': ' + labeler('Q' + str(reference['numeric-id']), repo))
+                            # otherwise it's a definite time field
+                            elif 'time' in reference and isinstance(reference, dict):
+                                notes_lst.append(ref_label + ': ' + wikidata_time_to_iso(reference['time']))
+                            elif 'text' in reference and isinstance(reference, dict):
+                                notes_lst.append(ref_label + ': ' + reference['text'])
+                            else:
+                                notes_lst.append(ref_label + ': ' + reference)
+                                # print(ref_label + ': ' + reference)
+                        notes_lst.append('-----------------------------')
+                if 'qualifiers' in statement:
+                    qualifiers = statement['qualifiers']
+                    qualifier_counter = 1
+                    for qua in qualifiers:
+                        notes_lst.append('statement ' + str(statement_counter) + ', qualifier ' + str(qualifier_counter))
+                        qualifier_counter += 1
+                        qua_label = labeler(qualifiers[qua][0]['property'], repo)
+                        qualifier = qualifiers[qua][0]['datavalue']['value']
+                        if isinstance(qualifier, dict):
+                            if 'numeric-id' in qualifier:
+                                notes_lst.append(qua_label + ': ' + labeler('Q' + str(qualifier['numeric-id']), repo))
+                                # print(qua_label + ': ' + labeler('Q' + str(qualifier['numeric-id']), repo))
+                            elif 'time' in qualifier:
+                                notes_lst.append(qua_label + ': ' + wikidata_time_to_iso(qualifier['time']))
+                                # print(qua_label + ': ' + wikidata_time_to_iso(qualifier['time']))
+                        else:
+                            notes_lst.append(qua_label + ': ' + qualifier)
+                            # print(qua_label + ': ' + qualifier)
+                        notes_lst.append('-----------------------------')
+            row[property] = '|'.join(statement_lst)
+            row[property + ' - notes'] = '\n'.join(notes_lst)
+
     return row
 
 def main():
