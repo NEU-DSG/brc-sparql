@@ -86,9 +86,9 @@ def wikidata_time_to_iso(ts):
     if not ts or len(ts) < 18:
         return ""
     # Splicing time stamp
-    year_str = ts[1:12]     # 1 to 11 (11 chars)
-    month_str = ts[13:15]   # 13 and 14 (2 chars)
-    day_str = ts[16:18]     # 16 and 17 (2 chars)
+    year_str = ts[1:12]
+    month_str = ts[13:15] 
+    day_str = ts[16:18] 
 
     try:
         year = int(year_str)
@@ -104,7 +104,6 @@ def wikidata_time_to_iso(ts):
     return f"{year:04d}-{month_str}-{day_str}"
 
 def export_item(repo, q_id):
-    print(q_id)
     # Create dictionary for new row
     row = dict.fromkeys(COLUMN_NAMES)
     item = pywikibot.ItemPage(repo, q_id)  # a repository item
@@ -125,22 +124,17 @@ def export_item(repo, q_id):
         statement_lst = []
         notes_lst = []
         if p_value in ALL_PROPS:
-            # print('-------------------------------------------------------------')
-            print(p_value)
             property = labeler(p_value,repo)
             statement_counter = 0
             for statement in claims[p_value]:
                 statement_counter += 1
-                # print('statement ' + str(statement_counter))
                 value = statement['mainsnak']['datavalue']['value']
                 # check if it references another Wikidata item
                 if 'numeric-id' in value and isinstance(value, dict):
                     statement_lst.append(labeler('Q' + str(value['numeric-id']), repo))
-                    # print(labeler('Q' + str(value['numeric-id']), repo))
                 # otherwise it's a definite time field
                 elif 'time' in value and isinstance(value, dict):
                     statement_lst.append(wikidata_time_to_iso(value['time']))
-                    # print(wikidata_time_to_iso(value['time']))
                 else:
                     statement_lst.append(value)
                 if 'references' in statement:
@@ -153,14 +147,9 @@ def export_item(repo, q_id):
                         for part in ref['snaks']:
                             ref_label = labeler(ref['snaks'][part][0]['property'], repo)
                             reference = ref['snaks'][part][0]['datavalue']['value']
-                        # print(ref['snaks'])
-                        # ref_label = labeler(ref['snaks'][next(iter(ref['snaks']))][0]['property'], repo)
-                        # reference = ref['snaks'][next(iter(ref['snaks']))][0]['datavalue']['value']
                         # if it references another Wikidata item
-                            print(reference)
                             if 'numeric-id' in reference:
                                 notes_lst.append(ref_label + ': ' + labeler('Q' + str(reference['numeric-id']), repo))
-                                # print(ref_label + ': ' + labeler('Q' + str(reference['numeric-id']), repo))
                             # otherwise it's a definite time field
                             elif 'time' in reference and isinstance(reference, dict):
                                 notes_lst.append(ref_label + ': ' + wikidata_time_to_iso(reference['time']))
@@ -168,7 +157,6 @@ def export_item(repo, q_id):
                                 notes_lst.append(ref_label + ': ' + reference['text'])
                             else:
                                 notes_lst.append(ref_label + ': ' + reference)
-                                # print(ref_label + ': ' + reference)
                         notes_lst.append('-----------------------------')
                 if 'qualifiers' in statement:
                     qualifiers = statement['qualifiers']
@@ -181,13 +169,10 @@ def export_item(repo, q_id):
                         if isinstance(qualifier, dict):
                             if 'numeric-id' in qualifier:
                                 notes_lst.append(qua_label + ': ' + labeler('Q' + str(qualifier['numeric-id']), repo))
-                                # print(qua_label + ': ' + labeler('Q' + str(qualifier['numeric-id']), repo))
                             elif 'time' in qualifier:
                                 notes_lst.append(qua_label + ': ' + wikidata_time_to_iso(qualifier['time']))
-                                # print(qua_label + ': ' + wikidata_time_to_iso(qualifier['time']))
                         else:
                             notes_lst.append(qua_label + ': ' + qualifier)
-                            # print(qua_label + ': ' + qualifier)
                         notes_lst.append('-----------------------------')
             row[property] = '|'.join(statement_lst)
             row[property + ' - notes'] = '\n'.join(notes_lst)
