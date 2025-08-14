@@ -47,7 +47,7 @@ COLUMN_NAMES = [
     'sex or gender', 'sex or gender - notes',
     'ethnic group', 'ethnic group - notes',
     'country of citizenship', 'country of citizenship - notes',
-    'languages', 'languages - notes',
+    'languages spoken, written or signed', 'languages spoken, written or signed - notes',
     'occupation', 'occupation - notes',
     'field of work', 'field of work - notes',
     'educated at', 'educated at - notes',
@@ -62,7 +62,7 @@ COLUMN_NAMES = [
     'field of training', 'field of training - notes',
     'influenced by', 'influenced by - notes',
     'described by source', 'described by source - notes',
-    'on wikimedia project', 'on wikimedia project - notes',
+    'on focus list of Wikimedia project', 'on focus list of Wikimedia project - notes',
     'commons gallery', 'commons gallery - notes',
     'contributor to work', 'contributor to work - notes',
     'spouse', 'spouse - notes',
@@ -104,6 +104,7 @@ def wikidata_time_to_iso(ts):
     return f"{year:04d}-{month_str}-{day_str}"
 
 def export_item(repo, q_id):
+    '''Function for exporting items and all their statements, qualifiers, and references.'''
     # Create dictionary for new row
     row = dict.fromkeys(COLUMN_NAMES)
     item = pywikibot.ItemPage(repo, q_id)  # a repository item
@@ -125,7 +126,7 @@ def export_item(repo, q_id):
         notes_lst = []
         if p_value in ALL_PROPS:
             print(p_value)
-            property = labeler(p_value,repo)
+            property_label = labeler(p_value,repo)
             statement_counter = 0
             for statement in claims[p_value]:
                 statement_counter += 1
@@ -193,8 +194,8 @@ def export_item(repo, q_id):
                             else:
                                 notes_lst.append(qua_label + ': ' + qualifier)
                             notes_lst.append('-----------------------------')
-            row[property] = '|'.join(statement_lst)
-            row[property + ' - notes'] = '\n'.join(notes_lst)
+            row[property_label] = '|'.join(statement_lst)
+            row[property_label + ' - notes'] = '\n'.join(notes_lst)
 
     return row
 
