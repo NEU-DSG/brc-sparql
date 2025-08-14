@@ -119,42 +119,53 @@ def export_item(repo, q_id):
     aliases = (alias.get('en') or [{}])
     combined_aliases = '|'.join([a.get('value', '') for a in aliases if a.get('value')])
     row['alias'] = combined_aliases
-    
+    print(q_id, (label.get('en') or {}).get('value'))
     for p_value in claims:
         statement_lst = []
         notes_lst = []
         if p_value in ALL_PROPS:
+            print(p_value)
             property = labeler(p_value,repo)
             statement_counter = 0
             for statement in claims[p_value]:
                 statement_counter += 1
-                value = statement['mainsnak']['datavalue']['value']
-                # check if it references another Wikidata item
-                if 'numeric-id' in value and isinstance(value, dict):
-                    statement_lst.append(labeler('Q' + str(value['numeric-id']), repo))
-                # otherwise it's a definite time field
-                elif 'time' in value and isinstance(value, dict):
-                    statement_lst.append(wikidata_time_to_iso(value['time']))
+                if statement['mainsnak']['snaktype'] == 'somevalue':
+                    statement_lst.append('unknown value')
                 else:
-                    statement_lst.append(value)
+                    value = statement['mainsnak']['datavalue']['value']
+                    print(value)
+                    # check if it references another Wikidata item
+                    if 'numeric-id' in value and isinstance(value, dict):
+                        statement_lst.append(labeler('Q' + str(value['numeric-id']), repo))
+                    # otherwise it's a definite time field
+                    elif 'time' in value and isinstance(value, dict):
+                        statement_lst.append(wikidata_time_to_iso(value['time']))
+                    elif 'text' in value and isinstance(value, dict):
+                        statement_lst.append(value['text'])
+                    else:
+                        statement_lst.append(value)
                 if 'references' in statement:
                     # Iterate over references
                     reference_counter = 1
                     for ref in statement['references']:
+                        
                         notes_lst.append('statement ' + str(statement_counter) + ', reference ' + str(reference_counter))
                         reference_counter += 1
                         # Iterate over each part of a reference
                         for part in ref['snaks']:
                             ref_label = labeler(ref['snaks'][part][0]['property'], repo)
                             reference = ref['snaks'][part][0]['datavalue']['value']
+                            print("reference:", reference)
                         # if it references another Wikidata item
                             if 'numeric-id' in reference:
                                 notes_lst.append(ref_label + ': ' + labeler('Q' + str(reference['numeric-id']), repo))
                             # otherwise it's a definite time field
                             elif 'time' in reference and isinstance(reference, dict):
                                 notes_lst.append(ref_label + ': ' + wikidata_time_to_iso(reference['time']))
+                            # or a text field
                             elif 'text' in reference and isinstance(reference, dict):
                                 notes_lst.append(ref_label + ': ' + reference['text'])
+                            # not a dictionary and we should just export it
                             else:
                                 notes_lst.append(ref_label + ': ' + reference)
                         notes_lst.append('-----------------------------')
@@ -162,18 +173,26 @@ def export_item(repo, q_id):
                     qualifiers = statement['qualifiers']
                     qualifier_counter = 1
                     for qua in qualifiers:
+                        print("qualifier:", qualifiers[qua][0])
                         notes_lst.append('statement ' + str(statement_counter) + ', qualifier ' + str(qualifier_counter))
                         qualifier_counter += 1
                         qua_label = labeler(qualifiers[qua][0]['property'], repo)
-                        qualifier = qualifiers[qua][0]['datavalue']['value']
-                        if isinstance(qualifier, dict):
-                            if 'numeric-id' in qualifier:
-                                notes_lst.append(qua_label + ': ' + labeler('Q' + str(qualifier['numeric-id']), repo))
-                            elif 'time' in qualifier:
-                                notes_lst.append(qua_label + ': ' + wikidata_time_to_iso(qualifier['time']))
-                        else:
-                            notes_lst.append(qua_label + ': ' + qualifier)
-                        notes_lst.append('-----------------------------')
+                        # check if it is an unknown value
+                        if qualifiers[qua][0]['snaktype'] == 'somevalue':
+                            notes_lst.append(qua_label + ': unknown value')
+                        # otherwise parse the value and continue
+                        else: 
+                            qualifier = qualifiers[qua][0]['datavalue']['value']
+                            if isinstance(qualifier, dict):
+                                if 'numeric-id' in qualifier:
+                                    notes_lst.append(qua_label + ': ' + labeler('Q' + str(qualifier['numeric-id']), repo))
+                                elif 'time' in qualifier:
+                                    notes_lst.append(qua_label + ': ' + wikidata_time_to_iso(qualifier['time']))
+                                elif 'text' in qualifier:
+                                    notes_lst.append(qua_label + ': ' + qualifier['text'])
+                            else:
+                                notes_lst.append(qua_label + ': ' + qualifier)
+                            notes_lst.append('-----------------------------')
             row[property] = '|'.join(statement_lst)
             row[property + ' - notes'] = '\n'.join(notes_lst)
 
@@ -188,7 +207,7 @@ def main():
     repo = site.data_repository() 
     # create df
     df = pd.DataFrame(columns=COLUMN_NAMES)
-    for id in IDS[:10]:
+    for id in IDS:
         row = export_item(repo, id)
         df.loc[len(df)] = row
     df.to_csv('export.csv')
